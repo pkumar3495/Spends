@@ -6,12 +6,11 @@
     <string name="dummy_content">DUMMY\nCONTENT</string>
 
     <string-array name="type_of_spends">
-
         <item>Food</item>
         <item>Grocery</item>
         <item>Treat</item>
         <item>Shopping</item>
         <item>others</item>
-
     </string-array>
+
 </resources>
