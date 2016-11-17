@@ -1,6 +1,9 @@
+//Created by Prashant.
+//..
 package com.example.prashant.todolist;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -9,12 +12,15 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,10 +33,19 @@ import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
 
+// Variables
+
     private static final String TAG = "MainActivity";
     private TaskDBHelper mHelper;
     private ListView mTaskListView;
     private ArrayAdapter<String> mAdapter;
+    private ArrayAdapter<CharSequence> adapter;
+//    TextView type = (TextView)findViewById(R.id.type_textView);
+    TextView total_text = (TextView) findViewById(R.id.total_text);
+    int total = 0;
+
+// OnCreate method with the current time initialisations and displaying it.
+// Also the database initialisations.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,10 +68,11 @@ public class MainActivity extends AppCompatActivity {
         }
         cursor.close();
         db.close();
-
         updateUI();
 
     }
+
+// Creating the all option menu (visible and hidden)
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -64,17 +80,42 @@ public class MainActivity extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
+// Checking for selection and initialising the custom layout with the spinner for the alert dialog box.
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 //        LayoutInflater inflater = getLayoutInflater();
 //        View alertLayout = inflater.inflate(R.layout.activity_dialog_layout, null);
+        LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View v = inflater.inflate(R.layout.activity_dialog_layout, null);
+
+        final Spinner spinner = (Spinner)v.findViewById(R.id.type);
+        adapter = ArrayAdapter.createFromResource(this, R.array.type_of_spends, android.R.layout.simple_list_item_1);
+        adapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
+        spinner.setAdapter(adapter);
+
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Toast.makeText(getBaseContext(), parent.getItemAtPosition(position)+" selected", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+// All the menu buttons functionality checking with the switch statement
+// Also calling updateUi everytime to update the according to the entries in the database
+
         switch (item.getItemId()) {
             case R.id.action_add_task:
-                final EditText taskEditText = new EditText(this);
+                final EditText taskEditText = (EditText)v.findViewById(R.id.Amount);
                 AlertDialog dialog = new AlertDialog.Builder(this)
                         .setTitle("Add")
                         .setMessage("How much did u spend?")
-                        .setView(taskEditText)
+                        .setView(v)
                         .setPositiveButton("Add", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -119,6 +160,8 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.refresh:
                 updateUI();
+//                Intent intent1 = new Intent(this, dialog_layout.class);
+//                startActivity(intent1);
                 return true;
 
             default:
@@ -126,9 +169,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+// The display toast message after changing the budget successfully.
+
     public void budget_change_toast_message(){
         Toast.makeText(MainActivity.this, "Budget successfully changed :)", Toast.LENGTH_LONG).show();
     }
+
+// Function to update UI according to the entries in the database.
 
     private void updateUI() {
         ArrayList<String> taskList = new ArrayList<>();
@@ -156,6 +203,9 @@ public class MainActivity extends AppCompatActivity {
         cursor.close();
         db.close();
     }
+
+// Function for the cross button to delete the entry from the database and update the UI
+
     public void deleteTask(View view) {
         View parent = (View) view.getParent();
         TextView taskTextView = (TextView) parent.findViewById(R.id.task_title);
@@ -167,4 +217,26 @@ public class MainActivity extends AppCompatActivity {
         db.close();
         updateUI();
     }
+
+// Trying to detect the back key press to close the app.
+
+//    @Override
+//    public boolean onKeyDown(int keyCode, KeyEvent event){
+//        if(keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0){
+//            finish();
+//            return true;
+//        }
+//        return super.onKeyDown(keyCode, event);
+//    }
+
+
+// function trying to calculate total dynamically
+
+//    public void calc_total(){
+//        TextView taskTitle = (TextView)findViewById(R.id.task_title);
+//        String value_buffer = taskTitle.getText().toString();
+//        int value_entered = Integer.parseInt(value_buffer);
+//        total = total + value_entered;
+//        total_text.setText(total);
+//    }
 }

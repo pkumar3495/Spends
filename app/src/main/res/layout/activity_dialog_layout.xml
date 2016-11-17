@@ -15,13 +15,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/type"
-        android:layout_weight="1"/>
+        android:layout_weight="1"
+        android:prompt="@array/type_of_spends"/>
 
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
         android:id="@+id/Amount"
-        android:inputType="number" />
+        android:inputType="number"
+        android:layout_weight="1"/>
 
 </LinearLayout>

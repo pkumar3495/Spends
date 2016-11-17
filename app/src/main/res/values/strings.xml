@@ -4,14 +4,24 @@
     <string name="title_activity_fullscreen">FullscreenActivity</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="please_select">Please select</string>
+    <string name="hello">Hello</string>
+    <string name="total">Total</string>
+    <string name="_0">0</string>
+    <string name="targetwise">TargetWise</string>
 
     <string-array name="type_of_spends">
 
-        <item>Food</item>
         <item>Grocery</item>
-        <item>Treat</item>
-        <item>Shopping</item>
-        <item>others</item>
+        <item>Toileries</item>
+        <item>Food and Dinning</item>
+        <item>Transportation</item>
+        <item>Clothing</item>
+        <item>Personal Care</item>
+        <item>Stationary</item>
+        <item>Entertainment</item>
+        <item>Sports and games</item>
+        <item>Others</item>
 
     </string-array>
 

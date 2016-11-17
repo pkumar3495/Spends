@@ -12,6 +12,7 @@ public class dialog_layout extends AppCompatActivity {
 
     Spinner spinner;
     ArrayAdapter<CharSequence> adapter;
+//    TextView type = (TextView) findViewById(R.id.type_textView);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,4 +37,5 @@ public class dialog_layout extends AppCompatActivity {
         });
 
     }
+
 }
