@@ -9,6 +9,7 @@
     <string name="total">Total</string>
     <string name="_0">0</string>
     <string name="targetwise">TargetWise</string>
+    <string name="budget_pic">budget_pic</string>
 
     <string-array name="type_of_spends">
 

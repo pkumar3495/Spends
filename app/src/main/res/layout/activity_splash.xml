@@ -13,7 +13,8 @@
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:src="@drawable/budget"/>
+        android:src="@drawable/budget"
+        android:contentDescription="@string/budget_pic"/>
 
     <TextView
         android:layout_width="match_parent"
@@ -26,7 +27,7 @@
         android:layout_alignParentEnd="true"
         android:textAlignment="center"
         android:textSize="32sp"
-        android:textColor="#000000"
+        android:textColor="#030303"
         android:textAllCaps="true"
         android:textStyle="bold"/>
 
