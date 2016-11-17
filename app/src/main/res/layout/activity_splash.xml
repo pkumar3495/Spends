@@ -15,7 +15,7 @@
         android:layout_height="match_parent"
         android:src="@drawable/budget"/>
 
-    <!--<TextView
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/targetWise"
@@ -26,8 +26,8 @@
         android:layout_alignParentEnd="true"
         android:textAlignment="center"
         android:textSize="32sp"
-        android:textColor="#408111"
+        android:textColor="#000000"
         android:textAllCaps="true"
-        android:textStyle="bold"/>-->
+        android:textStyle="bold"/>
 
 </RelativeLayout>
