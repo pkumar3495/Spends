@@ -27,9 +27,10 @@ import android.widget.Toast;
 import com.example.prashant.todolist.db.TaskContract;
 import com.example.prashant.todolist.db.TaskDBHelper;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Calendar;
+import java.util.Currency;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -39,10 +40,14 @@ public class MainActivity extends AppCompatActivity {
     private TaskDBHelper mHelper;
     private ListView mTaskListView;
     private ArrayAdapter<String> mAdapter;
-    private ArrayAdapter<CharSequence> adapter;
-//    TextView type = (TextView)findViewById(R.id.type_textView);
-    TextView total_text = (TextView) findViewById(R.id.total_text);
-    int total = 0;
+    private String itemSelected;
+    //    TextView type = (TextView)findViewById(R.id.type_textView);
+        TextView total_text;
+        int total = 0;
+        TextView taskTitle;
+    String symbol;
+    public int valueEntered;
+    int try1;
 
 // OnCreate method with the current time initialisations and displaying it.
 // Also the database initialisations.
@@ -52,19 +57,46 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Currency currency = Currency.getInstance(Locale.getDefault());
+        symbol = currency.getSymbol();
+
+        taskTitle = (TextView)findViewById(R.id.task_title);
+        total_text = (TextView) findViewById(R.id.total_text);
+//        total_text.setText(total);
+//        calc_total();
+
         TextView todaysDate = (TextView) findViewById(R.id.todaysDate);
-        String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
+//        Calendar c = Calendar.getInstance();
+//        SimpleDateFormat df = new SimpleDateFormat("dd - MMM - yyyy");
+//        String currentDateTimeString = df.format(c.getTime());
+        final Calendar c = Calendar.getInstance();
+        int yy = c.get(Calendar.YEAR);
+        int mm_buffer = c.get(Calendar.MONTH);
+        int mm = mm_buffer + 1;
+        int dd = c.get(Calendar.DAY_OF_MONTH);
+        String currentDateTimeString = dd + " - " + mm + " - " + yy;
         todaysDate.setText(currentDateTimeString);
+
+        //Receiving data from calender activity
+        Bundle bundle = getIntent().getBundleExtra("data");
+        String dateReceived = bundle.getString("date");
+        Log.e(TAG, ""+dateReceived);
 
         mHelper = new TaskDBHelper(this);
         mTaskListView = (ListView) findViewById(R.id.list_todo);
+
         SQLiteDatabase db = mHelper.getReadableDatabase();
+
         Cursor cursor = db.query(TaskContract.TaskEntry.TABLE,
-                new String[]{TaskContract.TaskEntry._ID, TaskContract.TaskEntry.COL_TASK_TITLE},
+                new String[]{TaskContract.TaskEntry._ID, TaskContract.TaskEntry.COL_TASK_TITLE, TaskContract.TaskEntry.COL_TYPE, TaskContract.TaskEntry.COL_SUM},
                 null, null, null, null, null);
         while (cursor.moveToNext()) {
             int idx = cursor.getColumnIndex(TaskContract.TaskEntry.COL_TASK_TITLE);
+            int idx1 = cursor.getColumnIndex(TaskContract.TaskEntry.COL_TYPE);
+            int idx2= cursor.getColumnIndex(TaskContract.TaskEntry.COL_SUM);
             Log.d(TAG, "Task: " + cursor.getString(idx));
+            Log.d(TAG, "Type: " + cursor.getString(idx1));
+            Log.d(TAG, "Sum: " + cursor.getString(idx2));
         }
         cursor.close();
         db.close();
@@ -90,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
         View v = inflater.inflate(R.layout.activity_dialog_layout, null);
 
         final Spinner spinner = (Spinner)v.findViewById(R.id.type);
-        adapter = ArrayAdapter.createFromResource(this, R.array.type_of_spends, android.R.layout.simple_list_item_1);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.type_of_spends, android.R.layout.simple_list_item_1);
         adapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
         spinner.setAdapter(adapter);
 
@@ -98,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Toast.makeText(getBaseContext(), parent.getItemAtPosition(position)+" selected", Toast.LENGTH_SHORT).show();
+                itemSelected = spinner.getItemAtPosition(position).toString();
             }
 
             @Override
@@ -120,9 +153,17 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 String task = String.valueOf(taskEditText.getText());
+                                String type = itemSelected;
+                                valueEntered = Integer.parseInt(task);
+                                total = total + valueEntered;
+                                Log.e(TAG, "total : " +total);
+                                total_text.setText(""+total);
+                                String sum = " " + type + " ( " + symbol + " " + task + " )";
                                 SQLiteDatabase db = mHelper.getWritableDatabase();
                                 ContentValues values = new ContentValues();
                                 values.put(TaskContract.TaskEntry.COL_TASK_TITLE, task);
+                                values.put(TaskContract.TaskEntry.COL_TYPE, type);
+                                values.put(TaskContract.TaskEntry.COL_SUM, sum);
                                 db.insertWithOnConflict(TaskContract.TaskEntry.TABLE,
                                         null,
                                         values,
@@ -179,24 +220,36 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateUI() {
         ArrayList<String> taskList = new ArrayList<>();
+        ArrayList<String> typeList = new ArrayList<>();
+        ArrayList<String> sumList = new ArrayList<>();
         SQLiteDatabase db = mHelper.getReadableDatabase();
+
+        Cursor cur = db.rawQuery("SELECT SUM(" + TaskContract.TaskEntry.COL_TASK_TITLE + ") FROM " + TaskContract.TaskEntry.TABLE +";" , null);
+        if(cur.moveToFirst())
+            try1 =  cur.getInt(0);
+        total_text.setText(""+try1);
+
         Cursor cursor = db.query(TaskContract.TaskEntry.TABLE,
-                new String[]{TaskContract.TaskEntry._ID, TaskContract.TaskEntry.COL_TASK_TITLE},
+                new String[]{TaskContract.TaskEntry._ID, TaskContract.TaskEntry.COL_TASK_TITLE, TaskContract.TaskEntry.COL_TYPE, TaskContract.TaskEntry.COL_SUM},
                 null, null, null, null, null);
         while (cursor.moveToNext()) {
             int idx = cursor.getColumnIndex(TaskContract.TaskEntry.COL_TASK_TITLE);
+            int idx1 = cursor.getColumnIndex(TaskContract.TaskEntry.COL_TYPE);
+            int idx2 = cursor.getColumnIndex(TaskContract.TaskEntry.COL_SUM);
             taskList.add(cursor.getString(idx));
+            typeList.add(cursor.getString(idx1));
+            sumList.add(cursor.getString(idx2));
         }
 
         if (mAdapter == null) {
             mAdapter = new ArrayAdapter<>(this,
                     R.layout.item_todo,
                     R.id.task_title,
-                    taskList);
+                    sumList);
             mTaskListView.setAdapter(mAdapter);
         } else {
             mAdapter.clear();
-            mAdapter.addAll(taskList);
+            mAdapter.addAll(sumList);
             mAdapter.notifyDataSetChanged();
         }
 
@@ -211,8 +264,14 @@ public class MainActivity extends AppCompatActivity {
         TextView taskTextView = (TextView) parent.findViewById(R.id.task_title);
         String task = String.valueOf(taskTextView.getText());
         SQLiteDatabase db = mHelper.getWritableDatabase();
+
+        Cursor cur = db.rawQuery("SELECT SUM(" + TaskContract.TaskEntry.COL_TASK_TITLE + ") FROM " + TaskContract.TaskEntry.TABLE +";" , null);
+        if(cur.moveToFirst())
+            try1 =  cur.getInt(0);
+        total_text.setText(""+try1);
+
         db.delete(TaskContract.TaskEntry.TABLE,
-                TaskContract.TaskEntry.COL_TASK_TITLE + " = ?",
+                TaskContract.TaskEntry.COL_SUM + " = ?",
                 new String[]{task});
         db.close();
         updateUI();
@@ -232,11 +291,11 @@ public class MainActivity extends AppCompatActivity {
 
 // function trying to calculate total dynamically
 
-//    public void calc_total(){
-//        TextView taskTitle = (TextView)findViewById(R.id.task_title);
-//        String value_buffer = taskTitle.getText().toString();
-//        int value_entered = Integer.parseInt(value_buffer);
-//        total = total + value_entered;
-//        total_text.setText(total);
-//    }
+//        public void calc_total(){
+//            final EditText taskEditText = (EditText) findViewById(R.id.Amount);
+//            String value_buffer = String.valueOf(taskEditText.getText());
+//            int value_entered = Integer.parseInt(value_buffer);
+//            total = total + value_entered;
+//            total_text.setText(total);
+//        }
 }

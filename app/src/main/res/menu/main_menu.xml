@@ -5,23 +5,23 @@
     <item
         android:id="@+id/action_add_task"
         android:icon="@android:drawable/ic_menu_add"
-        app:showAsAction="always"
-        android:title="Add Task" />
+        android:title="@string/add_task"
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/refresh"
         app:showAsAction="never"
-        android:title="Refresh"/>
+        android:title="@string/refresh"/>
 
     <item
         android:id="@+id/change_budget"
         app:showAsAction="never"
-        android:title="Change Budget"/>
+        android:title="@string/change_budget"/>
 
     <item
         android:id="@+id/calender"
-        app:showAsAction="always"
-        android:title="calender"
-        android:icon="@android:drawable/ic_menu_my_calendar" />
+        android:icon="@android:drawable/ic_menu_my_calendar"
+        android:title="@string/calender"
+        app:showAsAction="ifRoom" />
 
 </menu>

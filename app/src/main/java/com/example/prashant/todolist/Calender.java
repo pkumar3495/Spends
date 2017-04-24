@@ -1,6 +1,7 @@
 package com.example.prashant.todolist;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.CalendarView;
 import android.widget.Toast;
@@ -25,6 +26,12 @@ public class Calender extends Activity {
             public void onSelectedDayChange(CalendarView arg0, int year, int month,
                                             int date) {
                 Toast.makeText(getApplicationContext(),date+ "/"+(month+1)+"/"+year,Toast.LENGTH_SHORT).show();
+                String dateToSend = date + " - " + month+1 + " - " + year;
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("date", dateToSend);
+                intent.putExtra("data", bundle);
+                Calender.this.startActivity(intent);
             }
         });
 

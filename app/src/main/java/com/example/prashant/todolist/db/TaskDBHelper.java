@@ -18,7 +18,10 @@ public class TaskDBHelper extends SQLiteOpenHelper{
     public void onCreate(SQLiteDatabase db) {
         String createTable = "CREATE TABLE " + TaskContract.TaskEntry.TABLE + " ( " +
                 TaskContract.TaskEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                TaskContract.TaskEntry.COL_TASK_TITLE + " TEXT NOT NULL);";
+                TaskContract.TaskEntry.COL_TASK_TITLE + " NUMBER NOT NULL, " +
+                TaskContract.TaskEntry.COL_TYPE + " TEXT NOT NULL, " +
+                TaskContract.TaskEntry.COL_SUM + " TEXT NOT NULL, " +
+                TaskContract.TaskEntry.COL_DATE + " TEXT NOT NULL);";
 
         db.execSQL(createTable);
 

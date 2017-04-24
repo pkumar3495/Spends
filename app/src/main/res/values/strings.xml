@@ -7,14 +7,19 @@
     <string name="please_select">Please select</string>
     <string name="hello">Hello</string>
     <string name="total">Total</string>
-    <string name="_0">0</string>
+    <string name="_0">null</string>
     <string name="targetwise">TargetWise</string>
     <string name="budget_pic">budget_pic</string>
+    <string name="add_task">Add Task</string>
+    <string name="refresh">Refresh</string>
+    <string name="change_budget">Change Budget</string>
+    <string name="calender">calender</string>
+    <string name="something_went_wrong_while_displaying_the_date">Something went wrong while displaying the date</string>
 
     <string-array name="type_of_spends">
 
         <item>Grocery</item>
-        <item>Toileries</item>
+        <item>Toiletries</item>
         <item>Food and Dinning</item>
         <item>Transportation</item>
         <item>Clothing</item>
