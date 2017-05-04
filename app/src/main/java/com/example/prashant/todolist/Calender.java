@@ -26,12 +26,19 @@ public class Calender extends Activity {
             public void onSelectedDayChange(CalendarView arg0, int year, int month,
                                             int date) {
                 Toast.makeText(getApplicationContext(),date+ "/"+(month+1)+"/"+year,Toast.LENGTH_SHORT).show();
-                String dateToSend = date + " - " + month+1 + " - " + year;
+                int increasedMonth = month+1;
+//                String dateToSend = date + " - " + increasedMonth + " - " + year;
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putString("date", dateToSend);
-                intent.putExtra("data", bundle);
-                Calender.this.startActivity(intent);
+//                Bundle bundle = new Bundle();
+//                bundle.putString("date", dateToSend);
+////                intent.putExtra("data", bundle);
+                intent.putExtra("date", date);
+                intent.putExtra("month", increasedMonth);
+                intent.putExtra("year", year);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                startActivity(intent);
             }
         });
 

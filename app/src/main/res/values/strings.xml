@@ -14,7 +14,9 @@
     <string name="refresh">Refresh</string>
     <string name="change_budget">Change Budget</string>
     <string name="calender">calender</string>
-    <string name="something_went_wrong_while_displaying_the_date">Something went wrong while displaying the date</string>
+    <string name="Current_date">0 - 0 - 0000</string>
+    <string name="about">About</string>
+    <string name="about_text">This app is a project exclusively for the people who has no idea where they wasting their money.</string>
 
     <string-array name="type_of_spends">
 

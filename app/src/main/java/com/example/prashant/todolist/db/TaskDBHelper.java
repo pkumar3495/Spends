@@ -21,7 +21,7 @@ public class TaskDBHelper extends SQLiteOpenHelper{
                 TaskContract.TaskEntry.COL_TASK_TITLE + " NUMBER NOT NULL, " +
                 TaskContract.TaskEntry.COL_TYPE + " TEXT NOT NULL, " +
                 TaskContract.TaskEntry.COL_SUM + " TEXT NOT NULL, " +
-                TaskContract.TaskEntry.COL_DATE + " TEXT NOT NULL);";
+                TaskContract.TaskEntry.COL_DATE + " NUMBER NOT NULL);";
 
         db.execSQL(createTable);
 
