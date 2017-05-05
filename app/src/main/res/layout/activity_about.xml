@@ -14,11 +14,16 @@
         android:layout_marginRight="16dp"
         android:orientation="vertical">
 
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:src="@mipmap/weekly_calendar"
+            android:layout_marginTop="16dp"/>
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="32dp"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="16dp"
             android:gravity="center"
             android:text="SPENDS"
             android:textAppearance="?android:textAppearanceLarge" />

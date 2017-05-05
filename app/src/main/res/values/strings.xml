@@ -17,6 +17,7 @@
     <string name="Current_date">0 - 0 - 0000</string>
     <string name="about">About</string>
     <string name="about_text">This app is a project exclusively for the people who has no idea where they wasting their money.</string>
+    <string name="settings">Settings</string>
 
     <string-array name="type_of_spends">
 
@@ -32,5 +33,6 @@
         <item>Others</item>
 
     </string-array>
+    <string name="title_activity_settings">Settings</string>
 
 </resources>

@@ -19,7 +19,7 @@
         </activity>
         <activity android:name=".Calender" />
         <activity android:name=".dialog_layout" />
-        <activity android:name=".About"></activity>
+        <activity android:name=".About" />
     </application>
 
 </manifest>
