@@ -21,15 +21,6 @@
             android:orientation="horizontal"
             android:padding="12dp">
 
-            <!--<TextView-->
-                <!--android:id="@+id/type_textView"-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:text="@string/please_select"-->
-                <!--android:paddingRight="10sp"-->
-                <!--android:paddingLeft="10sp"-->
-                <!--android:layout_weight="1"/>-->
-
             <TextView
                 android:id="@+id/task_title"
                 android:layout_width="0dp"

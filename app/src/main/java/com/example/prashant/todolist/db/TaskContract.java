@@ -16,6 +16,14 @@ public class TaskContract {
         public static final String COL_TYPE = "type";
         public static final String COL_SUM = "sum";
         public static final String COL_DATE = "date";
+
+        public static final String TABLE1 = "savings";
+        public static final String COL_SAVINGS_ID = "savings_id";
+        public static final String COL_DAILY_BUDGET = "daily_budget";
+        public static final String COL_DAILY_BUDGET_CONST = "daily_budget_const";
+        public static final String COL_MONTHLY_BUDGET = "monthly_budget";
+        public static final String COL_MONTHLY_BUDGET_CONST = "monthly_budget_const";
+        public static final String COL_SAVINGS = "savings";
     }
 
 }

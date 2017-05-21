@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -50,12 +51,30 @@ public class MainActivity extends AppCompatActivity {
     String symbol;
     public int valueEntered;
     int try1;
+    int try2;
     int dateReceived;
     int monthReceived;
     int yearReceived;
     List <String> list = new ArrayList<String>();
     String dateCombined_buffer;
     int dateCombined;
+
+    int totalBudget;
+    int lastDate;
+    int dailyBudget;
+    int count;
+    TextView dailyBudgetTextView;
+    int savings;
+    int currTask = 0;
+    int totalBudgetConst;
+    int dailyBudgetConst;
+    int flag = 0;
+
+    int dailyBudgetToSend;
+    int dailyBudgetToSendConst;
+    int monthlyBudgetToSend;
+    int monthlyBudgetToSendConst;
+    int savingsToSend;
 
 // OnCreate method with the current time initialisations and displaying it.
 // Also the database initialisations.
@@ -70,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
 
         taskTitle = (TextView)findViewById(R.id.task_title);
         total_text = (TextView) findViewById(R.id.total_text);
+        dailyBudgetTextView = (TextView) findViewById(R.id.daily_budget_textView);
 //        total_text.setText(total);
 //        calc_total();
 
@@ -86,6 +106,8 @@ public class MainActivity extends AppCompatActivity {
 //        dateReceived = currentDateTimeString;
         todaysDate.setText(currentDateTimeString);
 
+        lastDate = Calendar.getInstance().getActualMaximum(c.DAY_OF_MONTH);
+
         //Receiving data from calender activity
 //        Bundle bundle = getIntent().getBundleExtra("data");
 
@@ -98,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
             Log.e(TAG, "" + monthReceived);
             Log.e(TAG, "" + yearReceived);
             todaysDate.setText(dateReceived + " - " + monthReceived + " - " + yearReceived);
+            flag = 1;
         }
         Log.e(TAG, "Current date : " + dateReceived);
         Log.e(TAG, "Current month : " + monthReceived);
@@ -127,7 +150,6 @@ public class MainActivity extends AppCompatActivity {
         cursor.close();
         db.close();
         updateUI();
-
     }
 
 // Creating all the option menu (visible and hidden)
@@ -146,6 +168,9 @@ public class MainActivity extends AppCompatActivity {
 //        View alertLayout = inflater.inflate(R.layout.activity_dialog_layout, null);
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View v = inflater.inflate(R.layout.activity_dialog_layout, null);
+
+        LayoutInflater inflater1 = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View v1 = inflater1.inflate(R.layout.budget_dialog_layout, null);
 
         final Spinner spinner = (Spinner)v.findViewById(R.id.type);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.type_of_spends, android.R.layout.simple_list_item_1);
@@ -185,6 +210,8 @@ public class MainActivity extends AppCompatActivity {
                                 int date = Integer.parseInt(date_buffer);
                                 String type = itemSelected;
 
+                                currTask = Integer.parseInt(task);
+
                                 //Calculating total
                                 valueEntered = Integer.parseInt(task);
                                 total = total + valueEntered;
@@ -211,23 +238,6 @@ public class MainActivity extends AppCompatActivity {
                 dialog.show();
                 return true;
 
-            case R.id.change_budget:
-                final EditText taskEditText1 = new EditText(this);
-                AlertDialog dialog1 = new AlertDialog.Builder(this)
-                        .setTitle("Change budget")
-                        .setMessage("Enter your preferred budget?")
-                        .setView(taskEditText1)
-                        .setPositiveButton("Change", new DialogInterface.OnClickListener(){
-                            @Override
-                            public void onClick(DialogInterface dialog, int which){
-                                budget_change_toast_message();
-                            }
-                        })
-                        .setNegativeButton("Cancel", null)
-                        .create();
-                dialog1.show();
-                return true;
-
             case R.id.calender:
                 Intent intent = new Intent(this, Calender.class);
                 startActivity(intent);
@@ -238,6 +248,36 @@ public class MainActivity extends AppCompatActivity {
 //                Intent intent1 = new Intent(this, dialog_layout.class);
 //                startActivity(intent1);
                 return true;
+
+            case R.id.savings:
+                SQLiteDatabase fetchingCurrentResourceDb = mHelper.getReadableDatabase();
+                Cursor fetchingCurrentResourceCursor = fetchingCurrentResourceDb.query(TaskContract.TaskEntry.TABLE1,
+                        new String[]{TaskContract.TaskEntry.COL_SAVINGS_ID, TaskContract.TaskEntry.COL_DAILY_BUDGET, TaskContract.TaskEntry.COL_DAILY_BUDGET_CONST, TaskContract.TaskEntry.COL_MONTHLY_BUDGET, TaskContract.TaskEntry.COL_MONTHLY_BUDGET_CONST, TaskContract.TaskEntry.COL_SAVINGS},
+                        null, null, null, null, null);
+                while (fetchingCurrentResourceCursor.moveToNext()) {
+                    int index = fetchingCurrentResourceCursor.getColumnIndex(TaskContract.TaskEntry.COL_DAILY_BUDGET);
+                    int index4 = fetchingCurrentResourceCursor.getColumnIndex(TaskContract.TaskEntry.COL_DAILY_BUDGET_CONST);
+                    int index1 = fetchingCurrentResourceCursor.getColumnIndex(TaskContract.TaskEntry.COL_MONTHLY_BUDGET);
+                    int index2 = fetchingCurrentResourceCursor.getColumnIndex(TaskContract.TaskEntry.COL_MONTHLY_BUDGET_CONST);
+                    int index3 = fetchingCurrentResourceCursor.getColumnIndex(TaskContract.TaskEntry.COL_SAVINGS);
+                    dailyBudgetToSend = fetchingCurrentResourceCursor.getInt(index);
+                    dailyBudgetToSendConst = fetchingCurrentResourceCursor.getInt(index4);
+                    monthlyBudgetToSend = fetchingCurrentResourceCursor.getInt(index1);
+                    monthlyBudgetToSendConst = fetchingCurrentResourceCursor.getInt(index2);
+                    savingsToSend = fetchingCurrentResourceCursor.getInt(index3);
+                }
+                fetchingCurrentResourceCursor.close();
+                fetchingCurrentResourceDb.close();
+                dailyBudgetToSend = dailyBudgetToSendConst - try1;
+                monthlyBudgetToSend = monthlyBudgetToSendConst - try2;
+
+                Intent intent2 = new Intent(this, savings.class);
+                intent2.putExtra("dailyBudget", dailyBudgetToSend);
+                intent2.putExtra("monthlyBudget", monthlyBudgetToSend);
+                intent2.putExtra("savings", savingsToSend);
+                startActivity(intent2);
+                return true;
+
             case R.id.About:
                 Intent intent1 = new Intent(this, About.class);
                 startActivity(intent1);
@@ -268,6 +308,10 @@ public class MainActivity extends AppCompatActivity {
         if(cur.moveToFirst())
             try1 =  cur.getInt(0);
         total_text.setText(""+try1);
+
+        Cursor cur1 = db.rawQuery("SELECT SUM(" + TaskContract.TaskEntry.COL_TASK_TITLE + ") FROM " + TaskContract.TaskEntry.TABLE, null);
+        if(cur1.moveToFirst())
+            try2 =  cur1.getInt(0);
 
         Cursor cursor = db.query(TaskContract.TaskEntry.TABLE,
                 new String[]{TaskContract.TaskEntry._ID, TaskContract.TaskEntry.COL_TASK_TITLE, TaskContract.TaskEntry.COL_TYPE, TaskContract.TaskEntry.COL_SUM, TaskContract.TaskEntry.COL_DATE},
@@ -317,6 +361,136 @@ public class MainActivity extends AppCompatActivity {
         }
         cursor.close();
         db.close();
+
+        //Counting the number of entries in the savings database to check whether the app is running for the first time or not
+
+        SQLiteDatabase countDb = mHelper.getReadableDatabase();
+        Cursor countCursor = countDb.rawQuery("SELECT COUNT(" + TaskContract.TaskEntry.COL_DAILY_BUDGET + ") FROM " + TaskContract.TaskEntry.TABLE1 + ";", null);
+        if (countCursor.moveToFirst())
+            count = countCursor.getInt(0);
+        Log.e(TAG, "Count : " + count);
+        countCursor.close();
+        countDb.close();
+
+        if (dateReceived == 1 || count == 0){
+            final EditText editText = new EditText(this);
+            editText.setInputType(InputType.TYPE_CLASS_NUMBER);
+            editText.setMaxLines(1);
+            AlertDialog budgetEntryDialog = new AlertDialog.Builder(this)
+                    .setTitle("Enter the budget for this month !")
+                    .setView(editText)
+                    .setCancelable(false)
+                    .setPositiveButton("Set", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            totalBudget = 0;
+                            dailyBudget = 0;
+                            totalBudget = Integer.parseInt(editText.getText().toString());
+                            totalBudgetConst = totalBudget;
+                            dailyBudget = totalBudget / (lastDate - dateReceived);
+                            dailyBudgetConst = dailyBudget;
+                            dailyBudgetTextView.setText(""+dailyBudget);
+                            savings = 0;
+                            Log.e(TAG, "Total budget : " + totalBudget);
+                            Log.e(TAG, "Daily budget : " + dailyBudget);
+                            Log.e(TAG, "Savings : " + savings);
+                            savingsToDb();
+                            logging();
+                        }
+                    })
+                    .create();
+            budgetEntryDialog.show();
+        }
+        else {
+            calculatingDailyBudget();
+            logging();
+        }
+    }
+
+    public void calculatingDailyBudget(){
+        SQLiteDatabase fetchingTotalBudgetDb = mHelper.getReadableDatabase();
+        Cursor fetchingTotalBudgetCursor = fetchingTotalBudgetDb.query(TaskContract.TaskEntry.TABLE1,
+                new String[]{TaskContract.TaskEntry.COL_SAVINGS_ID, TaskContract.TaskEntry.COL_DAILY_BUDGET, TaskContract.TaskEntry.COL_DAILY_BUDGET_CONST, TaskContract.TaskEntry.COL_MONTHLY_BUDGET, TaskContract.TaskEntry.COL_MONTHLY_BUDGET_CONST, TaskContract.TaskEntry.COL_SAVINGS},
+                null, null, null, null, null);
+        while (fetchingTotalBudgetCursor.moveToNext()){
+            int index = fetchingTotalBudgetCursor.getColumnIndex(TaskContract.TaskEntry.COL_DAILY_BUDGET);
+            int index4 = fetchingTotalBudgetCursor.getColumnIndex(TaskContract.TaskEntry.COL_DAILY_BUDGET_CONST);
+            int index1 = fetchingTotalBudgetCursor.getColumnIndex(TaskContract.TaskEntry.COL_MONTHLY_BUDGET);
+            int index2 = fetchingTotalBudgetCursor.getColumnIndex(TaskContract.TaskEntry.COL_MONTHLY_BUDGET_CONST);
+            int index3 = fetchingTotalBudgetCursor.getColumnIndex(TaskContract.TaskEntry.COL_SAVINGS);
+            dailyBudget = fetchingTotalBudgetCursor.getInt(index);
+            dailyBudgetConst = fetchingTotalBudgetCursor.getInt(index4);
+            totalBudget = fetchingTotalBudgetCursor.getInt(index1);
+            totalBudgetConst = fetchingTotalBudgetCursor.getInt(index2);
+            savings = fetchingTotalBudgetCursor.getInt(index3);
+        }
+        fetchingTotalBudgetCursor.close();
+        fetchingTotalBudgetDb.close();
+
+        int month;
+        int monthBuffer;
+        Calendar monthCheck = Calendar.getInstance();
+        monthBuffer = monthCheck.get(Calendar.MONTH);
+        month = monthBuffer + 1;
+
+        if (flag == 0) {
+            dailyBudget = totalBudgetConst / (lastDate - dateReceived);
+            Log.e(TAG, "flag : " + flag);
+        }
+        else if (flag == 1) {
+            if (month != monthReceived){
+                AlertDialog invalidDateDialog = new AlertDialog.Builder(this)
+                        .setTitle("Invalid date selection")
+                        .setMessage("Please select the date within the current month !")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Intent intent = new Intent(getBaseContext(), Calender.class);
+                                startActivity(intent);
+                            }
+                        })
+                        .create();
+                invalidDateDialog.show();
+            }
+            else {
+                dailyBudget = dailyBudgetConst;
+                Log.e(TAG, "flag : " + flag);
+            }
+        }
+        dailyBudgetTextView.setText(""+dailyBudget);
+        totalBudget = totalBudget - currTask;
+        savings = totalBudget;
+        savingsToDb();
+    }
+
+    public void savingsToDb(){
+        SQLiteDatabase savingsToDbDb = mHelper.getWritableDatabase();
+        ContentValues savingsToDbCv = new ContentValues();
+        savingsToDbCv.put(TaskContract.TaskEntry.COL_DAILY_BUDGET, dailyBudget);
+        savingsToDbCv.put(TaskContract.TaskEntry.COL_DAILY_BUDGET_CONST, dailyBudgetConst);
+        savingsToDbCv.put(TaskContract.TaskEntry.COL_MONTHLY_BUDGET, totalBudget);
+        savingsToDbCv.put(TaskContract.TaskEntry.COL_MONTHLY_BUDGET_CONST, totalBudgetConst);
+        savingsToDbCv.put(TaskContract.TaskEntry.COL_SAVINGS, savings);
+        savingsToDbDb.insertWithOnConflict(TaskContract.TaskEntry.TABLE1,
+                null,
+                savingsToDbCv,
+                SQLiteDatabase.CONFLICT_REPLACE);
+        savingsToDbDb.close();
+    }
+
+    public void logging(){
+        SQLiteDatabase loggingDb = mHelper.getReadableDatabase();
+        Cursor loggingCursor = loggingDb.query(TaskContract.TaskEntry.TABLE1,
+                new String[]{TaskContract.TaskEntry.COL_SAVINGS_ID, TaskContract.TaskEntry.COL_DAILY_BUDGET, TaskContract.TaskEntry.COL_DAILY_BUDGET_CONST, TaskContract.TaskEntry.COL_MONTHLY_BUDGET, TaskContract.TaskEntry.COL_MONTHLY_BUDGET_CONST, TaskContract.TaskEntry.COL_SAVINGS},
+                null, null, null, null, null);
+        while (loggingCursor.moveToNext()) {
+            int index = loggingCursor.getColumnIndex(TaskContract.TaskEntry.COL_DAILY_BUDGET);
+            int index4 = loggingCursor.getColumnIndex(TaskContract.TaskEntry.COL_DAILY_BUDGET_CONST);
+            int index1 = loggingCursor.getColumnIndex(TaskContract.TaskEntry.COL_MONTHLY_BUDGET);
+            int index2 = loggingCursor.getColumnIndex(TaskContract.TaskEntry.COL_MONTHLY_BUDGET_CONST);
+            int index3 = loggingCursor.getColumnIndex(TaskContract.TaskEntry.COL_SAVINGS);
+            Log.e(TAG, "Daily Budget from db: " + loggingCursor.getInt(index) + " Daily budget CONST from db : " + loggingCursor.getInt(index4) + " Monthly budget from db : " + loggingCursor.getInt(index1) + " Monthly budget CONST from db : " + loggingCursor.getInt(index2) + " Savings from db : " + loggingCursor.getInt(index3));
+        }
     }
 
 // Function for the cross button to delete the entry from the database and update the UI

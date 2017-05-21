@@ -20,6 +20,7 @@
         <activity android:name=".Calender" />
         <activity android:name=".dialog_layout" />
         <activity android:name=".About" />
+        <activity android:name=".savings"></activity>
     </application>
 
 </manifest>
