@@ -193,49 +193,68 @@ public class MainActivity extends AppCompatActivity {
 // All the menu buttons functionality checking with the switch statement
 // Also calling updateUi everytime to update the according to the entries in the database
 
+        int date;
+        Calendar dayCheck = Calendar.getInstance();
+        date = dayCheck.get(Calendar.DAY_OF_MONTH);
+
         switch (item.getItemId()) {
             case R.id.action_add_task:
                 final EditText taskEditText = (EditText)v.findViewById(R.id.Amount);
-                AlertDialog dialog = new AlertDialog.Builder(this)
-                        .setTitle("Add")
-                        .setMessage("How much did u spend?")
-                        .setView(v)
-                        .setPositiveButton("Add", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                String task = String.valueOf(taskEditText.getText());
+                if (date <= dateReceived) {
+                    AlertDialog dialog = new AlertDialog.Builder(this)
+                            .setTitle("Add")
+                            .setMessage("How much did u spend?")
+                            .setView(v)
+                            .setPositiveButton("Add", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    String task = String.valueOf(taskEditText.getText());
 //                                TextView todaysDate = (TextView) findViewById(R.id.todaysDate);
 //                                String date = todaysDate.getText().toString();
-                                String date_buffer = dateReceived+""+monthReceived+""+yearReceived;
-                                int date = Integer.parseInt(date_buffer);
-                                String type = itemSelected;
+                                    String date_buffer = dateReceived + "" + monthReceived + "" + yearReceived;
+                                    int date = Integer.parseInt(date_buffer);
+                                    String type = itemSelected;
 
-                                currTask = Integer.parseInt(task);
+                                    currTask = Integer.parseInt(task);
 
-                                //Calculating total
-                                valueEntered = Integer.parseInt(task);
-                                total = total + valueEntered;
+                                    //Calculating total
+                                    valueEntered = Integer.parseInt(task);
+                                    total = total + valueEntered;
 //                                Log.e(TAG, "total : " +total);
-                                total_text.setText(""+total);
+                                    total_text.setText("" + total);
 
-                                String sum = " " + type + " ( " + symbol + " " + task + " )";
-                                SQLiteDatabase db = mHelper.getWritableDatabase();
-                                ContentValues values = new ContentValues();
-                                values.put(TaskContract.TaskEntry.COL_TASK_TITLE, task);
-                                values.put(TaskContract.TaskEntry.COL_TYPE, type);
-                                values.put(TaskContract.TaskEntry.COL_SUM, sum);
-                                values.put(TaskContract.TaskEntry.COL_DATE, date);
-                                db.insertWithOnConflict(TaskContract.TaskEntry.TABLE,
-                                        null,
-                                        values,
-                                        SQLiteDatabase.CONFLICT_REPLACE);
-                                db.close();
-                                updateUI();
-                            }
-                        })
-                        .setNegativeButton("Cancel", null)
-                        .create();
-                dialog.show();
+                                    String sum = " " + type + " ( " + symbol + " " + task + " )";
+                                    SQLiteDatabase db = mHelper.getWritableDatabase();
+                                    ContentValues values = new ContentValues();
+                                    values.put(TaskContract.TaskEntry.COL_TASK_TITLE, task);
+                                    values.put(TaskContract.TaskEntry.COL_TYPE, type);
+                                    values.put(TaskContract.TaskEntry.COL_SUM, sum);
+                                    values.put(TaskContract.TaskEntry.COL_DATE, date);
+                                    db.insertWithOnConflict(TaskContract.TaskEntry.TABLE,
+                                            null,
+                                            values,
+                                            SQLiteDatabase.CONFLICT_REPLACE);
+                                    db.close();
+                                    updateUI();
+                                }
+                            })
+                            .setNegativeButton("Cancel", null)
+                            .create();
+                    dialog.show();
+                }
+                else{
+                    AlertDialog previousDate = new AlertDialog.Builder(this)
+                            .setTitle("Alert")
+                            .setMessage("You cannot change your past, move on !")
+                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            })
+                            .create();
+                    previousDate.show();
+                }
                 return true;
 
             case R.id.calender:
@@ -286,12 +305,6 @@ public class MainActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
-    }
-
-// The display toast message after changing the budget successfully.
-
-    public void budget_change_toast_message(){
-        Toast.makeText(MainActivity.this, "Budget successfully changed :)", Toast.LENGTH_LONG).show();
     }
 
 // Function to update UI according to the entries in the database.
@@ -496,24 +509,43 @@ public class MainActivity extends AppCompatActivity {
 // Function for the cross button to delete the entry from the database and update the UI
 
     public void deleteTask(View view) {
-        View parent = (View) view.getParent();
-        TextView taskTextView = (TextView) parent.findViewById(R.id.task_title);
-        String task = String.valueOf(taskTextView.getText());
-        SQLiteDatabase db = mHelper.getWritableDatabase();
+        int deletingDate;
+        Calendar dayCheck = Calendar.getInstance();
+        deletingDate = dayCheck.get(Calendar.DAY_OF_MONTH);
 
-        Cursor cur = db.rawQuery("SELECT SUM(" + TaskContract.TaskEntry.COL_TASK_TITLE + ") FROM " + TaskContract.TaskEntry.TABLE +" WHERE " + TaskContract.TaskEntry.COL_DATE + "=" +dateCombined, null);
-        if(cur.moveToFirst())
-            try1 =  cur.getInt(0);
-        total_text.setText(""+try1);
+        if (deletingDate <= dateReceived) {
+            View parent = (View) view.getParent();
+            TextView taskTextView = (TextView) parent.findViewById(R.id.task_title);
+            String task = String.valueOf(taskTextView.getText());
+            SQLiteDatabase db = mHelper.getWritableDatabase();
 
-        Log.e(TAG, "delete task : " +"\"" + task + "\"");
-        db.delete(TaskContract.TaskEntry.TABLE,
-                TaskContract.TaskEntry.COL_SUM + " = ? AND " + TaskContract.TaskEntry.COL_DATE + " = ?",
-                new String[]{task, dateCombined_buffer});
-        list.remove(task);
+            Cursor cur = db.rawQuery("SELECT SUM(" + TaskContract.TaskEntry.COL_TASK_TITLE + ") FROM " + TaskContract.TaskEntry.TABLE + " WHERE " + TaskContract.TaskEntry.COL_DATE + "=" + dateCombined, null);
+            if (cur.moveToFirst())
+                try1 = cur.getInt(0);
+            total_text.setText("" + try1);
+
+            Log.e(TAG, "delete task : " + "\"" + task + "\"");
+            db.delete(TaskContract.TaskEntry.TABLE,
+                    TaskContract.TaskEntry.COL_SUM + " = ? AND " + TaskContract.TaskEntry.COL_DATE + " = ?",
+                    new String[]{task, dateCombined_buffer});
+            list.remove(task);
 //        db.rawQuery("DELETE FROM " + TaskContract.TaskEntry.TABLE + " WHERE " + TaskContract.TaskEntry.COL_SUM + "=" +"\"" + task + "\""+ " AND " + TaskContract.TaskEntry.COL_DATE + "=" + dateCombined + ";", null);
-        db.close();
-        updateUI();
+            db.close();
+            updateUI();
+        }
+        else{
+            AlertDialog previousDateDeletion = new AlertDialog.Builder(this)
+                    .setTitle("Alert")
+                    .setMessage("You cannot change your past, move on !")
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .create();
+            previousDateDeletion.show();
+        }
     }
 
 // Trying to detect the back key press to close the app.
