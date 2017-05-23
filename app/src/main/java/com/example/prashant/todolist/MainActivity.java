@@ -26,6 +26,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.baoyz.widget.PullRefreshLayout;
 import com.example.prashant.todolist.db.TaskContract;
 import com.example.prashant.todolist.db.TaskDBHelper;
 
@@ -69,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
     int totalBudgetConst;
     int dailyBudgetConst;
     int flag = 0;
+    int deleteFlag = 0;
 
     int dailyBudgetToSend;
     int dailyBudgetToSendConst;
@@ -76,13 +78,39 @@ public class MainActivity extends AppCompatActivity {
     int monthlyBudgetToSendConst;
     int savingsToSend;
 
+    PullRefreshLayout layout;
+
+    String task;
+    int deletingTaskTitle;
+    int dailyBudgetConstBuffer, monthlyBudgetConstBuffer;
+    int extraForDay, extraForMonth;
+
+    int previousSavings;
 // OnCreate method with the current time initialisations and displaying it.
 // Also the database initialisations.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        overridePendingTransition(R.anim.slide_in, R.anim.hold);
+
         setContentView(R.layout.activity_main);
+
+        layout = (PullRefreshLayout) findViewById(R.id.swipeRefreshLayout);
+        layout.setRefreshStyle(PullRefreshLayout.STYLE_RING);
+        layout.setOnRefreshListener(new PullRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                layout.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        layout.setRefreshing(false);
+                        Toast.makeText(getApplicationContext(), "List updated", Toast.LENGTH_SHORT).show();
+                    }
+                }, 3000);
+            }
+        });
 
         Currency currency = Currency.getInstance(Locale.getDefault());
         symbol = currency.getSymbol();
@@ -386,29 +414,53 @@ public class MainActivity extends AppCompatActivity {
         countDb.close();
 
         if (dateReceived == 1 || count == 0){
+
+            SQLiteDatabase previousSavingsDb = mHelper.getReadableDatabase();
+            Cursor previousSavingsCursor = previousSavingsDb.query(TaskContract.TaskEntry.TABLE1,
+                    new String[]{TaskContract.TaskEntry.COL_SAVINGS_ID, TaskContract.TaskEntry.COL_MONTHLY_BUDGET},
+                    null, null, null, null, null);
+            while (previousSavingsCursor.moveToNext()){
+                int index = previousSavingsCursor.getColumnIndex(TaskContract.TaskEntry.COL_MONTHLY_BUDGET);
+                previousSavings = previousSavingsCursor.getInt(index);
+            }
+            previousSavingsCursor.close();
+            previousSavingsDb.close();
+
             final EditText editText = new EditText(this);
             editText.setInputType(InputType.TYPE_CLASS_NUMBER);
             editText.setMaxLines(1);
+            editText.setError("Cant leave empty");
             AlertDialog budgetEntryDialog = new AlertDialog.Builder(this)
-                    .setTitle("Enter the budget for this month !")
+                    .setTitle("Hello !")
+                    .setMessage("Enter your budget for this month")
                     .setView(editText)
                     .setCancelable(false)
-                    .setPositiveButton("Set", new DialogInterface.OnClickListener() {
+                    .setNeutralButton("Set", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             totalBudget = 0;
                             dailyBudget = 0;
-                            totalBudget = Integer.parseInt(editText.getText().toString());
-                            totalBudgetConst = totalBudget;
-                            dailyBudget = totalBudget / (lastDate - dateReceived);
-                            dailyBudgetConst = dailyBudget;
-                            dailyBudgetTextView.setText(""+dailyBudget);
-                            savings = 0;
-                            Log.e(TAG, "Total budget : " + totalBudget);
-                            Log.e(TAG, "Daily budget : " + dailyBudget);
-                            Log.e(TAG, "Savings : " + savings);
-                            savingsToDb();
-                            logging();
+                            if (editText.getText().toString().equals("")) {
+                                Log.e(TAG, "The edit text was empty");
+                                updateUI();
+                            }
+                            else {
+                                totalBudget = Integer.parseInt(editText.getText().toString());
+                                totalBudgetConst = totalBudget;
+                                dailyBudget = totalBudget / (lastDate - dateReceived);
+                                dailyBudgetConst = dailyBudget;
+                                dailyBudgetTextView.setText("" + dailyBudget);
+
+                                if (previousSavings > 0)
+                                    savings = previousSavings;
+                                else
+                                    savings = 0;
+                                Log.e(TAG, "Total budget : " + totalBudget);
+                                Log.e(TAG, "Daily budget : " + dailyBudget);
+                                Log.e(TAG, "Savings : " + savings);
+                                savingsToDb();
+                                logging();
+                            }
                         }
                     })
                     .create();
@@ -417,6 +469,7 @@ public class MainActivity extends AppCompatActivity {
         else {
             calculatingDailyBudget();
             logging();
+            limitCheck();
         }
     }
 
@@ -471,9 +524,16 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         dailyBudgetTextView.setText(""+dailyBudget);
-        totalBudget = totalBudget - currTask;
-        savings = totalBudget;
-        savingsToDb();
+        if (deleteFlag == 0) {
+            totalBudget = totalBudget - currTask;
+            savings = totalBudget;
+            savingsToDb();
+        }
+        else if (deleteFlag == 1){
+            totalBudget = totalBudget + deletingTaskTitle;
+            savings = totalBudget;
+            savingsToDb();
+        }
     }
 
     public void savingsToDb(){
@@ -504,11 +564,14 @@ public class MainActivity extends AppCompatActivity {
             int index3 = loggingCursor.getColumnIndex(TaskContract.TaskEntry.COL_SAVINGS);
             Log.e(TAG, "Daily Budget from db: " + loggingCursor.getInt(index) + " Daily budget CONST from db : " + loggingCursor.getInt(index4) + " Monthly budget from db : " + loggingCursor.getInt(index1) + " Monthly budget CONST from db : " + loggingCursor.getInt(index2) + " Savings from db : " + loggingCursor.getInt(index3));
         }
+        loggingCursor.close();
+        loggingDb.close();
     }
 
 // Function for the cross button to delete the entry from the database and update the UI
 
     public void deleteTask(View view) {
+        deleteFlag = 1;
         int deletingDate;
         Calendar dayCheck = Calendar.getInstance();
         deletingDate = dayCheck.get(Calendar.DAY_OF_MONTH);
@@ -516,15 +579,19 @@ public class MainActivity extends AppCompatActivity {
         if (deletingDate <= dateReceived) {
             View parent = (View) view.getParent();
             TextView taskTextView = (TextView) parent.findViewById(R.id.task_title);
-            String task = String.valueOf(taskTextView.getText());
-            SQLiteDatabase db = mHelper.getWritableDatabase();
+            task = String.valueOf(taskTextView.getText());
 
+            SQLiteDatabase db = mHelper.getWritableDatabase();
             Cursor cur = db.rawQuery("SELECT SUM(" + TaskContract.TaskEntry.COL_TASK_TITLE + ") FROM " + TaskContract.TaskEntry.TABLE + " WHERE " + TaskContract.TaskEntry.COL_DATE + "=" + dateCombined, null);
             if (cur.moveToFirst())
                 try1 = cur.getInt(0);
             total_text.setText("" + try1);
+            cur.close();
 
             Log.e(TAG, "delete task : " + "\"" + task + "\"");
+
+            deletingTaskTitle = Integer.parseInt(task.replaceAll("[^0-9]", ""));
+
             db.delete(TaskContract.TaskEntry.TABLE,
                     TaskContract.TaskEntry.COL_SUM + " = ? AND " + TaskContract.TaskEntry.COL_DATE + " = ?",
                     new String[]{task, dateCombined_buffer});
@@ -545,6 +612,53 @@ public class MainActivity extends AppCompatActivity {
                     })
                     .create();
             previousDateDeletion.show();
+        }
+        deleteFlag = 0;
+    }
+
+    public void limitCheck(){
+        SQLiteDatabase limitCheckDb = mHelper.getReadableDatabase();
+        Cursor limitCheckCursor = limitCheckDb.query(TaskContract.TaskEntry.TABLE1,
+                new String[]{TaskContract.TaskEntry.COL_SAVINGS_ID, TaskContract.TaskEntry.COL_DAILY_BUDGET_CONST, TaskContract.TaskEntry.COL_MONTHLY_BUDGET_CONST},
+                null, null, null, null, null);
+        while (limitCheckCursor.moveToNext()){
+            int index = limitCheckCursor.getColumnIndex(TaskContract.TaskEntry.COL_DAILY_BUDGET_CONST);
+            int index1 = limitCheckCursor.getColumnIndex(TaskContract.TaskEntry.COL_MONTHLY_BUDGET_CONST);
+            dailyBudgetConstBuffer = limitCheckCursor.getInt(index);
+            monthlyBudgetConstBuffer = limitCheckCursor.getInt(index1);
+        }
+        limitCheckCursor.close();
+        limitCheckDb.close();
+
+        if (try2 > monthlyBudgetConstBuffer){
+            extraForMonth = try2;
+            extraForMonth = extraForMonth - monthlyBudgetConstBuffer;
+            AlertDialog limitDialogMonth = new AlertDialog.Builder(this)
+                    .setTitle("Alert")
+                    .setMessage("You have exceeded monthly budget limit\nExtra cash used : " + extraForMonth)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .create();
+            limitDialogMonth.show();
+        }
+        if (try1 >( dailyBudgetConstBuffer + (dailyBudgetConstBuffer / 5))){
+            extraForDay = try1;
+            extraForDay = extraForDay - dailyBudgetConstBuffer;
+            AlertDialog limitDialogDay = new AlertDialog.Builder(this)
+                    .setTitle("Alert")
+                    .setMessage("You have exceeded today's budget limit\nExtra cash used : " + extraForDay)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .create();
+            limitDialogDay.show();
         }
     }
 

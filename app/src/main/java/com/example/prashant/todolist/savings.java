@@ -18,6 +18,8 @@ public class savings extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_savings);
 
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         savingsText = (TextView) findViewById(R.id.saving_text);
         dayLeft = (TextView) findViewById(R.id.day_left);
         monthLeft = (TextView) findViewById(R.id.month_left);

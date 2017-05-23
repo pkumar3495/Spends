@@ -14,14 +14,23 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <activity android:name=".Calender" />
         <activity android:name=".dialog_layout" />
-        <activity android:name=".About"
-            android:label="About"/>
-        <activity android:name=".savings"></activity>
+        <activity
+            android:name=".About"
+            android:label="About" />
+        <activity android:name=".savings" />
+        <activity android:name=".splash"
+            android:theme="@style/Theme.AppCompat.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
